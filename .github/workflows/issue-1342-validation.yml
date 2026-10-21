@@ -50,6 +50,22 @@ jobs:
             if [ "$result" -ne 0 ]; then failed=1; fi
           done
           exit "$failed"
+      - name: Compatible lint diagnostics
+        if: always()
+        run: |
+          npm install --prefix /tmp/lint-tool --ignore-scripts --no-package-lock --no-audit --no-fund eslint@9.39.5
+          node /tmp/lint-tool/node_modules/eslint/bin/eslint.js src/components/CodeSnippet/TabbedCodeSnippet.tsx src/components/CodeSnippet/TabbedCodeSnippet.test.tsx > lint-compatible.log 2>&1
+      - name: Baseline build comparison
+        if: always()
+        run: |
+          cp src/components/CodeSnippet/TabbedCodeSnippet.tsx /tmp/fixed.tsx
+          git show 8e0b523a99ce0421af68299d1d7f4659f74ba739:documentation/src/components/CodeSnippet/TabbedCodeSnippet.tsx > src/components/CodeSnippet/TabbedCodeSnippet.tsx
+          set +e
+          npm run build > baseline-build.log 2>&1
+          result=$?
+          cp /tmp/fixed.tsx src/components/CodeSnippet/TabbedCodeSnippet.tsx
+          echo "Baseline build exit=$result"
+          npx --no-install prettier --check src/components/CodeSnippet/TabbedCodeSnippet.tsx src/components/CodeSnippet/TabbedCodeSnippet.test.tsx
       - uses: actions/upload-artifact@v4
         if: always()
         with:
