@@ -21,30 +21,30 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: '1.2.0'
-      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
       - name: Regression against original component
         run: |
           cp src/components/CodeSnippet/TabbedCodeSnippet.tsx /tmp/fixed.tsx
           git show 8e0b523a99ce0421af68299d1d7f4659f74ba739:documentation/src/components/CodeSnippet/TabbedCodeSnippet.tsx > src/components/CodeSnippet/TabbedCodeSnippet.tsx
           set +e
-          bun run test src/components/CodeSnippet/TabbedCodeSnippet.test.tsx > baseline.log 2>&1
+          npm run test -- src/components/CodeSnippet/TabbedCodeSnippet.test.tsx > baseline.log 2>&1
           result=$?
           cp /tmp/fixed.tsx src/components/CodeSnippet/TabbedCodeSnippet.tsx
           cat baseline.log
           test "$result" -ne 0
       - name: Focused tests
-        run: bun run test src/components/CodeSnippet > tests.log 2>&1
+        run: npm run test -- src/components/CodeSnippet > tests.log 2>&1
       - name: Scoped lint and format
         run: |
-          bunx eslint src/components/CodeSnippet/TabbedCodeSnippet.tsx src/components/CodeSnippet/TabbedCodeSnippet.test.tsx
-          bunx prettier --check src/components/CodeSnippet/TabbedCodeSnippet.tsx src/components/CodeSnippet/TabbedCodeSnippet.test.tsx
+          npx --no-install eslint src/components/CodeSnippet/TabbedCodeSnippet.tsx src/components/CodeSnippet/TabbedCodeSnippet.test.tsx
+          npx --no-install prettier --check src/components/CodeSnippet/TabbedCodeSnippet.tsx src/components/CodeSnippet/TabbedCodeSnippet.test.tsx
       - name: Required documentation checks
         if: always()
         run: |
           set +e
           failed=0
           for check in typecheck lint format:check check:content-registry build; do
-            bun run "$check" > "check-${check//:/-}.log" 2>&1
+            npm run "$check" > "check-${check//:/-}.log" 2>&1
             result=$?
             echo "$check exit=$result" | tee -a checks-summary.log
             if [ "$result" -ne 0 ]; then failed=1; fi
