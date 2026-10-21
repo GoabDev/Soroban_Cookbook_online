@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -25,7 +25,7 @@ jobs:
       - name: Regression against original component
         run: |
           cp src/components/CodeSnippet/TabbedCodeSnippet.tsx /tmp/fixed.tsx
-          git show HEAD~1~1:documentation/src/components/CodeSnippet/TabbedCodeSnippet.tsx > src/components/CodeSnippet/TabbedCodeSnippet.tsx
+          git show 8e0b523a99ce0421af68299d1d7f4659f74ba739:documentation/src/components/CodeSnippet/TabbedCodeSnippet.tsx > src/components/CodeSnippet/TabbedCodeSnippet.tsx
           set +e
           bun run test src/components/CodeSnippet/TabbedCodeSnippet.test.tsx > baseline.log 2>&1
           result=$?
